@@ -42,9 +42,10 @@ min_commission_backtest <- function(prices, unadjusted_prices, theo_weights, tra
   # Iterate through prices and backtest
   for (i in 1:(nrow(theo_weights))) {
     current_date <- theo_weights[i, 1]  # date will be a numeric from origin
-    current_price <- wide_prices[i, -1]
+    current_price <- prices[i, -1]
     current_weights <- theo_weights[i, -1]
     current_unadjprice <-unadjusted_prices[i, -1]
+    need_rebalance <- !is.na(theo_weights[i, 1])
 
     # update total equity balance
     equity <- sum(share_pos * current_price) + Cash
@@ -75,20 +76,24 @@ min_commission_backtest <- function(prices, unadjusted_prices, theo_weights, tra
         cap_equity <- equity
       }
 
-      # Update target shares based on signal
-      targetshares <- positionsFromNoTradeBufferMinComm(share_pos, current_price, current_weights, cap_equity, trade_buffer)
-      # targetshares <- share_pos
-      # for(j in c(1:num_assets)) {
-      #   if(current_price[j] == 0 || (current_weights[j] == 0)) {
-      #     targetshares[j] <- 0
-      #     next  # no price/target size
-      #   }
-      #   this_targetshares <- trunc(current_weights[j]*cap_equity / current_price[j])
-      #   if(current_weights[j] != previous_weights[j] || this_targetshares == 0 || (abs(1 - share_pos[j]/this_targetshares)) >= rebal_tolerance) {  # prevents divide by zero error as last term is not evaulated if this_targetshares is zero.
-      #     targetshares[j] <- this_targetshares  # max(1, sum(current_signals != 0)) divides capital among anything with a non-zero position, while protecting against divide-by-zero errors in the case where we go from long/short to flat.
-      #   }
-      # }
-
+      if (need_rebalance) {
+        # Update target shares based on signal
+        targetshares <- positionsFromNoTradeBufferMinComm(share_pos, current_price, current_weights, cap_equity, trade_buffer)
+        # targetshares <- share_pos
+        # for(j in c(1:num_assets)) {
+        #   if(current_price[j] == 0 || (current_weights[j] == 0)) {
+        #     targetshares[j] <- 0
+        #     next  # no price/target size
+        #   }
+        #   this_targetshares <- trunc(current_weights[j]*cap_equity / current_price[j])
+        #   if(current_weights[j] != previous_weights[j] || this_targetshares == 0 || (abs(1 - share_pos[j]/this_targetshares)) >= rebal_tolerance) {  # prevents divide by zero error as last term is not evaulated if this_targetshares is zero.
+        #     targetshares[j] <- this_targetshares  # max(1, sum(current_signals != 0)) divides capital among anything with a non-zero position, while protecting against divide-by-zero errors in the case where we go from long/short to flat.
+        #   }
+        # }
+      }
+      else {
+        targetshares <- share_pos
+      }
       trades <- targetshares - share_pos
       tradevalue <- trades * current_price
 
