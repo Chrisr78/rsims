@@ -36,10 +36,18 @@ us_tiered_commission <- function(shares_traded, prices, unadjprices, max_pct_per
   # max z% of tradevalue
   tradevalue <- shares_traded * prices
   commissions <- pmin(abs(tradevalue)/unadjprices * dollars_per_share, max_pct_per_order*abs(tradevalue))  # scale by unadjusted close to get actual commissions on a given tradevalue
+  commissions[is.nan(commissions)] <- 0
   commissions[commissions < min_dollars_per_order & abs(shares_traded) > 0] <- min_dollars_per_order
 
   commissions
 }
 
 
+fixed_percent_commission <- function(shares_traded, prices, unadjprices, commission_pct = 0.0, min_commission_per_order = 0.0) {
 
+  trade_value <- shares_traded * prices
+  commissions <- abs(trade_value) * commission_pct
+  commissions[commissions < min_commission_per_order & abs(shares_traded) > 0] <- min_commission_per_order
+
+  commissions
+}

@@ -19,7 +19,9 @@ NumericVector positionsFromNoTradeBuffer(NumericVector current_positions, Numeri
   for(j = 0; j < num_assets; j++)
   {
     //Rprintf(\"%i %f %f \\n\", j, current_theo_weights[j], current_weights[j]);
-    if((R_IsNA(current_theo_weights[j])) | (current_theo_weights[j] == 0))
+    if(R_IsNA(current_theo_weights[j]))
+      target_positions[j] = current_positions[j];
+	else if(current_theo_weights[j] == 0)
       target_positions[j] = 0;
     else if(current_weights[j] < current_theo_weights[j] - trade_buffer)
       target_positions[j] = (current_theo_weights[j] - trade_buffer)*cap_equity/current_prices[j];

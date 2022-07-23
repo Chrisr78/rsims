@@ -40,12 +40,12 @@ min_commission_backtest <- function(prices, unadjusted_prices, theo_weights, tra
   previous_weights <- rep(0, num_assets)
 
   # Iterate through prices and backtest
-  for (i in 1:(nrow(theo_weights))) {
-    current_date <- theo_weights[i, 1]  # date will be a numeric from origin
+  for (i in 1:(nrow(prices))) {
+    current_date <- prices[i, 1]  # date will be a numeric from origin
     current_price <- prices[i, -1]
     current_weights <- theo_weights[i, -1]
     current_unadjprice <-unadjusted_prices[i, -1]
-    need_rebalance <- !is.na(theo_weights[i, 1])
+    need_rebalance <- !is.na(theo_weights[i, 1]) & !is.na(theo_weights[i, 2])
 
     # update total equity balance
     equity <- sum(share_pos * current_price) + Cash
